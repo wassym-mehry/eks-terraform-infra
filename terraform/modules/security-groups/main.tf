@@ -128,19 +128,19 @@ resource "aws_security_group" "rds" {
   description = "Security group for RDS instances"
 
   ingress {
-    description              = "MySQL/Aurora"
-    from_port                = 3306
-    to_port                  = 3306
-    protocol                 = "tcp"
-    source_security_group_id = aws_security_group.node_group.id
+    description     = "MySQL/Aurora"
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.node_group.id]
   }
 
   ingress {
-    description              = "PostgreSQL"
-    from_port                = 5432
-    to_port                  = 5432
-    protocol                 = "tcp"
-    source_security_group_id = aws_security_group.node_group.id
+    description     = "PostgreSQL"
+    from_port       = 5432
+    to_port         = 5432
+    protocol        = "tcp"
+    security_groups = [aws_security_group.node_group.id]
   }
 
   tags = merge(var.common_tags, {
@@ -157,19 +157,19 @@ resource "aws_security_group" "elasticache" {
   description = "Security group for ElastiCache clusters"
 
   ingress {
-    description              = "Redis"
-    from_port                = 6379
-    to_port                  = 6379
-    protocol                 = "tcp"
-    source_security_group_id = aws_security_group.node_group.id
+    description     = "Redis"
+    from_port       = 6379
+    to_port         = 6379
+    protocol        = "tcp"
+    security_groups = [aws_security_group.node_group.id]
   }
 
   ingress {
-    description              = "Memcached"
-    from_port                = 11211
-    to_port                  = 11211
-    protocol                 = "tcp"
-    source_security_group_id = aws_security_group.node_group.id
+    description     = "Memcached"
+    from_port       = 11211
+    to_port         = 11211
+    protocol        = "tcp"
+    security_groups = [aws_security_group.node_group.id]
   }
 
   tags = merge(var.common_tags, {

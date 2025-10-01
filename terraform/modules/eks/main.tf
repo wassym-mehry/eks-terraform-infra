@@ -178,11 +178,12 @@ resource "aws_cloudwatch_log_group" "cluster" {
 resource "aws_eks_addon" "addons" {
   for_each = var.cluster_addons
 
-  cluster_name             = aws_eks_cluster.main.name
-  addon_name               = each.key
-  addon_version            = each.value.version
-  resolve_conflicts        = "OVERWRITE"
-  service_account_role_arn = each.value.service_account_role_arn
+  cluster_name                = aws_eks_cluster.main.name
+  addon_name                  = each.key
+  addon_version               = each.value.version
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+  service_account_role_arn    = each.value.service_account_role_arn
 
   depends_on = [
     aws_eks_node_group.main,
