@@ -16,8 +16,8 @@ help: ## Show this help message
 	@echo ""
 	@awk 'BEGIN {FS = ":.*##"; printf "Usage: make [command]\n\nCommands:\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  $(GREEN)%-15s$(NC) %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 
-setup-aws: ## Setup AWS credentials and resources for GitHub Actions
-	@echo "$(YELLOW)Setting up AWS credentials...$(NC)"
+setup-aws: ## Setup AWS credentials and resources for GitHub Actions with S3 native locking
+	@echo "$(YELLOW)Setting up AWS credentials with S3 native locking...$(NC)"
 	@./scripts/setup-aws-credentials.sh
 
 init: ## Initialize Terraform for specified environment
@@ -86,7 +86,7 @@ security-scan: ## Run basic security checks
 
 install-tools: ## Install required tools (Linux/MacOS)
 	@echo "$(YELLOW)Installing required tools...$(NC)"
-	@which terraform >/dev/null || (echo "Installing Terraform..." && \
+	@which terraform >/dev/null || (echo "Installing Terraform 1.9.8+ for S3 native locking..." && \
 		curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add - && \
 		sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $$(lsb_release -cs) main" && \
 		sudo apt-get update && sudo apt-get install terraform)
@@ -125,7 +125,41 @@ aws-whoami: ## Show current AWS identity
 check-prerequisites: ## Check if all prerequisites are installed
 	@echo "$(YELLOW)Checking prerequisites...$(NC)"
 	@which terraform >/dev/null && echo "$(GREEN)✓ Terraform installed$(NC)" || echo "$(RED)✗ Terraform not found$(NC)"
+	@if which terraform >/dev/null; then \
+		TF_VERSION=$$(terraform version -json 2>/dev/null | jq -r '.terraform_version' 2>/dev/null || terraform version | head -n1 | cut -d' ' -f2 | sed 's/v//'); \
+		MAJOR=$$(echo $$TF_VERSION | cut -d. -f1); \
+		MINOR=$$(echo $$TF_VERSION | cut -d. -f2); \
+		if [ "$$MAJOR" -gt 1 ] || ([ "$$MAJOR" -eq 1 ] && [ "$$MINOR" -ge 9 ]); then \
+			echo "$(GREEN)✓ Terraform $$TF_VERSION supports S3 native locking$(NC)"; \
+		else \
+			echo "$(YELLOW)⚠ Terraform $$TF_VERSION detected. For S3 native locking, upgrade to 1.9.0+$(NC)"; \
+		fi; \
+	fi
 	@which kubectl >/dev/null && echo "$(GREEN)✓ kubectl installed$(NC)" || echo "$(RED)✗ kubectl not found$(NC)"
 	@which aws >/dev/null && echo "$(GREEN)✓ AWS CLI installed$(NC)" || echo "$(RED)✗ AWS CLI not found$(NC)"
 	@which jq >/dev/null && echo "$(GREEN)✓ jq installed$(NC)" || echo "$(RED)✗ jq not found$(NC)"
 	@which git >/dev/null && echo "$(GREEN)✓ git installed$(NC)" || echo "$(RED)✗ git not found$(NC)"
+
+check-s3-locking: ## Check if S3 native locking is supported and configured
+	@echo "$(YELLOW)Checking S3 native locking configuration...$(NC)"
+	@if which terraform >/dev/null; then \
+		TF_VERSION=$$(terraform version -json 2>/dev/null | jq -r '.terraform_version' 2>/dev/null || terraform version | head -n1 | cut -d' ' -f2 | sed 's/v//'); \
+		echo "Detected Terraform version: $$TF_VERSION"; \
+		MAJOR=$$(echo $$TF_VERSION | cut -d. -f1); \
+		MINOR=$$(echo $$TF_VERSION | cut -d. -f2); \
+		if [ "$$MAJOR" -gt 1 ] || ([ "$$MAJOR" -eq 1 ] && [ "$$MINOR" -ge 9 ]); then \
+			echo "$(GREEN)✓ Terraform $$TF_VERSION supports S3 native locking$(NC)"; \
+			echo "$(YELLOW)Checking backend configuration...$(NC)"; \
+			if grep -q "use_lockfile.*=.*true" terraform/backend.tf; then \
+				echo "$(GREEN)✓ S3 native locking enabled in backend configuration$(NC)"; \
+			else \
+				echo "$(YELLOW)⚠ S3 native locking not enabled in backend configuration$(NC)"; \
+				echo "$(YELLOW)  Add 'use_lockfile = true' to terraform/backend.tf$(NC)"; \
+			fi; \
+		else \
+			echo "$(RED)✗ Terraform $$TF_VERSION does not support S3 native locking$(NC)"; \
+			echo "$(YELLOW)  Please upgrade to Terraform 1.9.0 or later$(NC)"; \
+		fi; \
+	else \
+		echo "$(RED)✗ Terraform not found$(NC)"; \
+	fi

@@ -10,7 +10,7 @@ on:
       - '.github/workflows/terraform-plan.yml'
 
 env:
-  TF_VERSION: '1.6.0'
+  TF_VERSION: '1.9.8'  # Updated to support S3 native locking
   AWS_REGION: 'eu-west-1'
 
 jobs:

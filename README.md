@@ -44,7 +44,8 @@ eks-terraform-infra/
 
 - AWS Account with appropriate permissions
 - GitHub repository with Actions enabled
-- Terraform Cloud account (optional for remote state)
+- Terraform 1.9.0+ (for S3 native locking support)
+- AWS CLI v2+
 
 ## 🔧 Configuration
 

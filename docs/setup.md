@@ -6,7 +6,7 @@ This guide will walk you through setting up the complete EKS infrastructure with
 
 ### Tools Required
 - **AWS CLI** (v2.x or later)
-- **Terraform** (v1.6.0 or later)
+- **Terraform** (v1.9.0+ or later for S3 native locking)
 - **kubectl** (latest version)
 - **Git**
 - **jq** (for JSON processing)
@@ -19,8 +19,8 @@ This guide will walk you through setting up the complete EKS infrastructure with
   - VPC and networking resources
   - IAM roles and policies
   - EC2 instances
-  - S3 buckets
-  - DynamoDB tables
+  - S3 buckets with versioning (required for S3 native locking)
+  - DynamoDB tables (optional for redundant locking)
 
 ## 🚀 Step-by-Step Setup
 
@@ -37,19 +37,28 @@ chmod +x scripts/*.sh
 
 ### Step 2: Configure AWS Credentials for GitHub Actions
 
-This project uses OpenID Connect (OIDC) for secure authentication between GitHub Actions and AWS.
+This project uses OpenID Connect (OIDC) for secure authentication between GitHub Actions and AWS, with **S3 native locking** (Terraform 1.9.0+) for simplified state management.
 
 ```bash
-# Run the setup script
+# Run the S3 native locking setup script (recommended)
+./scripts/setup-aws-credentials-s3-native.sh
+
+# Or use the legacy DynamoDB-only setup
 ./scripts/setup-aws-credentials.sh
 ```
 
+**S3 Native Locking Benefits:**
+- ✅ Eliminates need for DynamoDB tables
+- ✅ Reduces AWS resource costs
+- ✅ Simplifies infrastructure management
+- ✅ Built-in Terraform support (1.9.0+)
+
 This script will:
 - Create an OIDC identity provider in AWS
-- Create an IAM role for GitHub Actions
-- Create S3 buckets for Terraform state
-- Create DynamoDB tables for state locking
-- Output the configuration needed for GitHub
+- Create an IAM role for GitHub Actions with S3 native locking permissions
+- Create S3 buckets with versioning enabled (required for S3 locking)
+- Optionally create DynamoDB tables for redundant locking
+- Configure all necessary permissions
 
 ### Step 3: Configure GitHub Secrets
 
