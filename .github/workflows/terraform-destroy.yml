@@ -1,0 +1,172 @@
+name: 'Terraform Destroy'
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to destroy'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+        default: 'dev'
+      confirm_destroy:
+        description: 'Type "destroy" to confirm destruction'
+        required: true
+        type: string
+      double_confirm:
+        description: 'Type the environment name again to double confirm'
+        required: true
+        type: string
+
+env:
+  TF_VERSION: '1.6.0'
+  AWS_REGION: 'eu-west-1'
+
+jobs:
+  validate-input:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirm_destroy }}" != "destroy" ]; then
+            echo "❌ Destruction not confirmed. Please type 'destroy' to confirm."
+            exit 1
+          fi
+          
+          if [ "${{ github.event.inputs.double_confirm }}" != "${{ github.event.inputs.environment }}" ]; then
+            echo "❌ Environment name doesn't match. Please type the environment name again."
+            exit 1
+          fi
+          
+          echo "✅ Destruction confirmed for ${{ github.event.inputs.environment }}"
+
+  terraform-destroy:
+    name: 'Terraform Destroy'
+    runs-on: ubuntu-latest
+    needs: [validate-input]
+    
+    environment:
+      name: destroy-${{ github.event.inputs.environment }}
+      
+    permissions:
+      contents: read
+      issues: write
+      id-token: write
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+        role-session-name: terraform-destroy-${{ github.event.inputs.environment }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+
+    - name: Terraform Init
+      working-directory: terraform
+      run: |
+        terraform init \
+          -backend-config="environments/${{ github.event.inputs.environment }}/backend.conf" \
+          -input=false
+      env:
+        TF_VAR_environment: ${{ github.event.inputs.environment }}
+
+    - name: Terraform Plan Destroy
+      working-directory: terraform
+      run: |
+        terraform plan \
+          -var-file="environments/${{ github.event.inputs.environment }}/terraform.tfvars" \
+          -destroy \
+          -out=destroy-plan \
+          -input=false
+      env:
+        TF_VAR_environment: ${{ github.event.inputs.environment }}
+
+    - name: Show Destroy Plan
+      working-directory: terraform
+      run: terraform show destroy-plan
+
+    - name: Wait before destroy
+      run: |
+        echo "⚠️ Waiting 30 seconds before destroying infrastructure..."
+        echo "This gives you time to cancel if needed."
+        sleep 30
+
+    - name: Terraform Destroy
+      working-directory: terraform
+      run: |
+        terraform apply \
+          -auto-approve \
+          destroy-plan
+      env:
+        TF_VAR_environment: ${{ github.event.inputs.environment }}
+
+    - name: Create destruction summary
+      run: |
+        echo "## 💥 Infrastructure Destroyed" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📋 Destruction Details" >> $GITHUB_STEP_SUMMARY
+        echo "- **Environment:** ${{ github.event.inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Region:** ${{ env.AWS_REGION }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Timestamp:** $(date)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "⚠️ **All resources for this environment have been destroyed.**" >> $GITHUB_STEP_SUMMARY
+
+    - name: Create destruction issue
+      if: success()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `Infrastructure Destroyed - ${{ github.event.inputs.environment }}`,
+            body: `
+            ## 💥 Infrastructure Destroyed Successfully
+            
+            **Environment:** ${{ github.event.inputs.environment }}
+            **Region:** ${{ env.AWS_REGION }}
+            **Destroyed by:** ${{ github.actor }}
+            **Timestamp:** ${new Date().toISOString()}
+            **Workflow Run:** [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            
+            All AWS resources for this environment have been destroyed.
+            `,
+            labels: ['terraform', 'infrastructure-destroyed', '${{ github.event.inputs.environment }}']
+          });
+
+    - name: Notify on failure
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: `Terraform Destroy Failed - ${{ github.event.inputs.environment }}`,
+            body: `
+            ## ❌ Terraform Destroy Failed
+            
+            **Environment:** ${{ github.event.inputs.environment }}
+            **Region:** ${{ env.AWS_REGION }}
+            **Workflow:** ${context.workflow}
+            **Run ID:** ${context.runId}
+            **Commit:** ${context.sha}
+            
+            The destroy operation failed. Please check the workflow logs and manually clean up any remaining resources.
+            
+            ⚠️ **Important:** Some resources may still exist and incur costs.
+            `,
+            labels: ['terraform', 'destroy-failed', '${{ github.event.inputs.environment }}']
+          });
