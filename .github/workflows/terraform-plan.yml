@@ -67,7 +67,7 @@ jobs:
         TF_VAR_environment: ${{ matrix.environment }}
 
     - name: Save Plan
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: tfplan-${{ matrix.environment }}
         path: terraform/tfplan-${{ matrix.environment }}
