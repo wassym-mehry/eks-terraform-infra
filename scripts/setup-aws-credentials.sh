@@ -257,7 +257,6 @@ main() {
     create_github_actions_role
     create_terraform_state_bucket
     output_configuration
-    create_oidc_provider
     echo ""
     echo -e "${GREEN}[SUCCESS] Setup completed successfully!${NC}"
 }
