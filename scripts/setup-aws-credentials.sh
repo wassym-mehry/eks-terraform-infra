@@ -110,9 +110,7 @@ create_github_actions_role() {
                 },
                 "StringLike": {
                     "token.actions.githubusercontent.com:sub": [
-                        "repo:${GITHUB_ORG}/${GITHUB_REPO}:ref:refs/heads/main",
-                        "repo:${GITHUB_ORG}/${GITHUB_REPO}:ref:refs/heads/develop",
-                        "repo:${GITHUB_ORG}/${GITHUB_REPO}:pull_request"
+                        "repo:${GITHUB_ORG}/${GITHUB_REPO}:*"
                     ]
                 }
             }
