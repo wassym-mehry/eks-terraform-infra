@@ -20,7 +20,6 @@ This guide will walk you through setting up the complete EKS infrastructure with
   - IAM roles and policies
   - EC2 instances
   - S3 buckets with versioning (required for S3 native locking)
-  - DynamoDB tables (optional for redundant locking)
 
 ## 🚀 Step-by-Step Setup
 
@@ -40,8 +39,6 @@ chmod +x scripts/*.sh
 This project uses OpenID Connect (OIDC) for secure authentication between GitHub Actions and AWS, with **S3 native locking** (Terraform 1.9.0+) for simplified state management.
 
 ```bash
-# Run the S3 native locking setup script (recommended)
-./scripts/setup-aws-credentials-s3-native.sh
 
 # Or use the legacy DynamoDB-only setup
 ./scripts/setup-aws-credentials.sh
@@ -138,7 +135,7 @@ terraform plan -var-file="environments/dev/terraform.tfvars"
    ```
 
 2. **Review the Plan:**
-   - Create a PR to `main` or `develop`
+   - Create a PR to `main`
    - GitHub Actions will automatically run `terraform plan`
    - Review the plan output in the PR comments
 
