@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - main
-      - develop
     paths:
       - 'terraform/**'
       - '.github/workflows/terraform-plan.yml'
@@ -20,7 +19,7 @@ jobs:
     
     strategy:
       matrix:
-        environment: [dev, staging, prod]
+        environment: [dev]
         
     permissions:
       contents: read
