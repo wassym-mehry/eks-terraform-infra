@@ -166,6 +166,14 @@ EOF
     
     if aws iam get-policy --policy-arn $POLICY_ARN >/dev/null 2>&1; then
         echo -e "${YELLOW}⚠️ Policy ${POLICY_NAME} already exists. Creating new version...${NC}"
+        # Supprimer la plus ancienne version si on atteint la limite de 5
+        NUM_VERSIONS=$(aws iam list-policy-versions --policy-arn $POLICY_ARN --query 'Versions' | jq length)
+        if [ "$NUM_VERSIONS" -ge 5 ]; then
+            OLDEST_VERSION=$(aws iam list-policy-versions --policy-arn $POLICY_ARN \
+                --query 'Versions[?IsDefaultVersion==`false`]|[0].VersionId' --output text)
+            echo -e "${YELLOW}Deleting oldest policy version: $OLDEST_VERSION${NC}"
+            aws iam delete-policy-version --policy-arn $POLICY_ARN --version-id $OLDEST_VERSION
+        fi
         aws iam create-policy-version --policy-arn $POLICY_ARN --policy-document file://terraform-policy.json --set-as-default
     else
         aws iam create-policy --policy-name $POLICY_NAME --policy-document file://terraform-policy.json
