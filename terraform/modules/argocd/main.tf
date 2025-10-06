@@ -25,6 +25,8 @@ resource "helm_release" "argocd" {
       github_repo           = var.github_repo
       ecr_repository_url    = var.ecr_repository_url
       load_balancer_enabled = var.enable_load_balancer
+      argocd_ecr_role_arn   = var.argocd_ecr_role_arn  
+
     })
   ]
 
