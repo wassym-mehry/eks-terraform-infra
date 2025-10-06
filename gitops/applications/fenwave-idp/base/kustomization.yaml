@@ -5,5 +5,5 @@ resources:
 - deployment.yaml
 
 images:
-- name: 752566893537.dkr.ecr.eu-west-3.amazonaws.com/fenwave/idp
+- name: 752566893537.dkr.ecr.eu-west-1.amazonaws.com/fenwave/idp
   newTag: latest

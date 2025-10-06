@@ -26,7 +26,7 @@ spec:
       serviceAccountName: fenwave-idp
       containers:
       - name: fenwave-idp
-        image: 752566893537.dkr.ecr.eu-west-3.amazonaws.com/fenwave/idp:latest
+        image: 752566893537.dkr.ecr.eu-west-1.amazonaws.com/fenwave/idp:latest
         ports:
         - containerPort: 7007
           name: http

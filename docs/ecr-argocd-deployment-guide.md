@@ -183,10 +183,10 @@ argocd app sync fenwave-idp
 
 ```bash
 # Lister les images dans ECR
-aws ecr describe-images --repository-name fenwave/idp --region eu-west-3
+aws ecr describe-images --repository-name fenwave/idp --region eu-west-1
 
 # Login manuel à ECR
-aws ecr get-login-password --region eu-west-3 | docker login --username AWS --password-stdin 752566893537.dkr.ecr.eu-west-3.amazonaws.com
+aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 752566893537.dkr.ecr.eu-west-1.amazonaws.com
 ```
 
 ### Debug Kubernetes
