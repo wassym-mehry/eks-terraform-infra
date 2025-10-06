@@ -33,3 +33,13 @@ output "ebs_csi_driver_role_arn" {
   description = "ARN of the EBS CSI Driver IAM role"
   value       = var.enable_ebs_csi_driver ? aws_iam_role.ebs_csi_driver[0].arn : null
 }
+
+output "github_actions_role_arn" {
+  description = "ARN of the GitHub Actions IAM role"
+  value       = aws_iam_role.github_actions.arn
+}
+
+output "argocd_ecr_role_arn" {
+  description = "ARN of the ArgoCD ECR IAM role"
+  value       = aws_iam_role.argocd_ecr.arn
+}

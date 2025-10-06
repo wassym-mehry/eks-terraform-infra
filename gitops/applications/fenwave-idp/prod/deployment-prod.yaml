@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fenwave-idp
+  namespace: fenwave
+spec:
+  replicas: 3
+  template:
+    spec:
+      containers:
+      - name: fenwave-idp
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: APP_CONFIG_app_baseUrl
+          value: "https://fenwave.your-domain.com"
+        - name: APP_CONFIG_backend_baseUrl
+          value: "https://fenwave.your-domain.com"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"

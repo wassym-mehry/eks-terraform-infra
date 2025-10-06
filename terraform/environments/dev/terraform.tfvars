@@ -44,3 +44,15 @@ additional_tags = {
   Backup      = "Required"
   Monitoring  = "Enabled"
 }
+
+# GitHub Configuration
+github_org  = "wassym-mehry"
+github_repo = "eks-terraform-infra"
+
+# ArgoCD Configuration
+enable_argocd                = true
+argocd_admin_password        = "admin123"
+argocd_enable_load_balancer  = true
+argocd_enable_ingress        = false
+create_fenwave_application   = true
+fenwave_namespace            = "fenwave"

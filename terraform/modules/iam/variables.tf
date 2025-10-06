@@ -37,3 +37,21 @@ variable "common_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "github_org" {
+  description = "GitHub organization name"
+  type        = string
+  default     = ""
+}
+
+variable "github_repo" {
+  description = "GitHub repository name"
+  type        = string
+  default     = ""
+}
+
+variable "ecr_repository_arn" {
+  description = "ARN of the ECR repository"
+  type        = string
+  default     = ""
+}
