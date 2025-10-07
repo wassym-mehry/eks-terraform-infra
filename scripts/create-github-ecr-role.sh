@@ -10,7 +10,7 @@ ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 REGION="eu-west-1"
 ROLE_NAME="github-actions-ecr-fenwave"
 POLICY_NAME="ECRPushPolicy"
-REPOSITORY_NAME="fenwave/idp"
+REPOSITORY_NAME="eks-infrastructure/idp"
 
 echo "🚀 Création du rôle IAM pour GitHub Actions ECR Access"
 echo "Account ID: $ACCOUNT_ID"
