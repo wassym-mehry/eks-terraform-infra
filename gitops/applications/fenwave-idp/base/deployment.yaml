@@ -68,7 +68,7 @@ spec:
       volumes:
       - name: app-config
         configMap:
-          name: fenwave-config
+          name: fenwave-config-argocd
 ---
 apiVersion: v1
 kind: Service
