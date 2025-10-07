@@ -1,0 +1,49 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: fenwave-idp
+  namespace: argocd
+  labels:
+    app: fenwave-idp
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  
+  # Source du code
+  source:
+    repoURL: https://github.com/wassym-mehry/eks-terraform-infra.git
+    targetRevision: feature/setup-infrastructure
+    path: gitops/applications/fenwave-idp/base
+  
+  # Destination dans le cluster
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: fenwave
+  
+  # Synchronisation automatique
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  
+  # Options de révision
+  revisionHistoryLimit: 10
+  
+  # Health checks
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas

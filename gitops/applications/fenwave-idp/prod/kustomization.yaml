@@ -8,5 +8,5 @@ patchesStrategicMerge:
 - deployment-prod.yaml
 
 images:
-- name: 752566893537.dkr.ecr.eu-west-1.amazonaws.com/fenwave/idp
-  newTag: latest
+- name: 954976325487.dkr.ecr.eu-west-1.amazonaws.com/fenwave/idp
+  newTag: v3

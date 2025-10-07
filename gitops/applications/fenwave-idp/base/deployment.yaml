@@ -26,7 +26,7 @@ spec:
       serviceAccountName: fenwave-idp
       containers:
       - name: fenwave-idp
-        image: 752566893537.dkr.ecr.eu-west-1.amazonaws.com/fenwave/idp:latest
+        image: 954976325487.dkr.ecr.eu-west-1.amazonaws.com/eks-infrastructure/idp:v8
         ports:
         - containerPort: 7007
           name: http
@@ -46,16 +46,20 @@ spec:
             cpu: "500m"
         livenessProbe:
           httpGet:
-            path: /healthcheck
+            path: /
             port: http
-          initialDelaySeconds: 30
-          periodSeconds: 10
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 5
         readinessProbe:
           httpGet:
-            path: /healthcheck
+            path: /
             port: http
-          initialDelaySeconds: 5
-          periodSeconds: 5
+          initialDelaySeconds: 90
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 10
         volumeMounts:
         - name: app-config
           mountPath: /app/app-config.production.yaml
@@ -107,13 +111,42 @@ data:
       listen:
         port: 7007
         host: 0.0.0.0
+      database:
+        client: pg
+        connection:
+          host: postgres-service
+          port: 5432
+          user: backstage
+          password: backstage123
+          database: backstage
 
-    kubernetes:
-      serviceLocatorMethod:
-        type: 'multiTenant'
-      clusterLocatorMethods:
-        - type: 'config'
-          clusters:
-            - url: https://kubernetes.default.svc
-              name: local-cluster
-              authProvider: 'serviceAccount'
+    # Basic integrations only (no custom ArgoCD plugins for now)
+    integrations:
+      github:
+        - host: github.com
+          # token: ${GITHUB_TOKEN}  # Add when needed
+
+    auth:
+      environment: production
+      providers:
+        guest: {}
+
+    catalog:
+      import:
+        entityFilename: catalog-info.yaml
+        pullRequestBranchName: backstage-integration
+      rules:
+        - allow: [Component, System, API, Resource, Location]
+
+    techdocs:
+      builder: 'local'
+      generator:
+        runIn: 'local'
+      publisher:
+        type: 'local'
+
+    scaffolder:
+      defaultAuthor:
+        name: Fenwave
+        email: admin@fenwave.com
+      defaultCommitMessage: 'Initial commit'
