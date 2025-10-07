@@ -409,3 +409,141 @@ resource "aws_iam_role_policy_attachment" "ebs_csi_driver" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
   role       = aws_iam_role.ebs_csi_driver[0].name
 }
+
+# GitHub Actions Role for ECR
+resource "aws_iam_role" "github_actions" {
+  name = "${var.project_name}-${var.environment}-github-actions-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/token.actions.githubusercontent.com"
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
+          }
+          StringLike = {
+            "token.actions.githubusercontent.com:sub" = "repo:${var.github_org}/${var.github_repo}:*"
+          }
+        }
+      }
+    ]
+  })
+
+  tags = merge(var.common_tags, {
+    Name = "${var.project_name}-${var.environment}-github-actions-role"
+  })
+}
+
+# GitHub Actions ECR Policy
+resource "aws_iam_policy" "github_actions_ecr" {
+  name        = "${var.project_name}-${var.environment}-github-actions-ecr-policy"
+  description = "Policy for GitHub Actions to push to ECR"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:CompleteLayerUpload",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:InitiateLayerUpload",
+          "ecr:PutImage",
+          "ecr:UploadLayerPart"
+        ]
+        Resource = var.ecr_repository_arn
+      }
+    ]
+  })
+
+  tags = merge(var.common_tags, {
+    Name = "${var.project_name}-${var.environment}-github-actions-ecr-policy"
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "github_actions_ecr" {
+  policy_arn = aws_iam_policy.github_actions_ecr.arn
+  role       = aws_iam_role.github_actions.name
+}
+
+# ArgoCD ECR Role
+resource "aws_iam_role" "argocd_ecr" {
+  name = "${var.project_name}-${var.environment}-argocd-ecr-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.cluster.arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "${replace(aws_iam_openid_connect_provider.cluster.url, "https://", "")}:sub" = "system:serviceaccount:argocd:argocd-repo-server"
+            "${replace(aws_iam_openid_connect_provider.cluster.url, "https://", "")}:aud" = "sts.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+
+  tags = merge(var.common_tags, {
+    Name = "${var.project_name}-${var.environment}-argocd-ecr-role"
+  })
+}
+
+# ArgoCD ECR Policy
+resource "aws_iam_policy" "argocd_ecr" {
+  name        = "${var.project_name}-${var.environment}-argocd-ecr-policy"
+  description = "Policy for ArgoCD to pull from ECR"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ]
+        Resource = var.ecr_repository_arn
+      }
+    ]
+  })
+
+  tags = merge(var.common_tags, {
+    Name = "${var.project_name}-${var.environment}-argocd-ecr-policy"
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "argocd_ecr" {
+  policy_arn = aws_iam_policy.argocd_ecr.arn
+  role       = aws_iam_role.argocd_ecr.name
+}
+
+# Data source for current AWS account
+data "aws_caller_identity" "current" {}

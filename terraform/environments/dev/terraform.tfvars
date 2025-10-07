@@ -9,7 +9,7 @@ cluster_version = "1.29"
 # VPC Configuration
 vpc_cidr             = "10.0.0.0/16"
 availability_zones   = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
-private_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+private_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24", "10.0.4.0/24"]
 public_subnet_cidrs  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 
 # Node Group Configuration - Optimized for development
@@ -44,3 +44,15 @@ additional_tags = {
   Backup      = "Required"
   Monitoring  = "Enabled"
 }
+
+# GitHub Configuration
+github_org  = "wassym-mehry"
+github_repo = "eks-terraform-infra"
+
+# ArgoCD Configuration
+enable_argocd                = true
+argocd_admin_password        = "admin123"
+argocd_enable_load_balancer  = true
+argocd_enable_ingress        = false
+create_fenwave_application   = true
+fenwave_namespace            = "fenwave"

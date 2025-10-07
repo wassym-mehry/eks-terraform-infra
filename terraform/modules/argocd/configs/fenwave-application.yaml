@@ -1,0 +1,25 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: fenwave-idp
+  namespace: ${namespace}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/${github_org}/${github_repo}
+    targetRevision: HEAD
+    path: gitops/applications/fenwave-idp/${environment}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ${target_namespace}
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+  revisionHistoryLimit: 3

@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fenwave-config
+  namespace: fenwave
+data:
+  app-config.production.yaml: |
+    app:
+      title: Fenwave IDP
+      baseUrl: https://fenwave.your-domain.com
+
+    backend:
+      baseUrl: https://fenwave.your-domain.com
+      listen:
+        port: 7007
+        host: 0.0.0.0
+      database:
+        client: pg
+        connection:
+          host: postgres-service
+          port: 5432
+          user: backstage
+          password: backstage123
+          database: backstage
+
+    # ArgoCD Configuration
+    argoCD:
+      baseUrl: http://argocd-server.argocd.svc.cluster.local
+      username: admin
+      password: Mq6NSRSuCwVRNSTe
+      token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhcmdvY2QiLCJzdWIiOiJhZG1pbjpsb2dpbiIsImV4cCI6MTc1OTkyMzU5NCwibmJmIjoxNzU5ODM3MTk0LCJpYXQiOjE3NTk4MzcxOTQsImp0aSI6ImQxZTczYmZlLWI4NGQtNDg5ZC04Y2MwLTFmMGZkZjNhMTFlZSJ9.AyjNNgzA1_q3116A4oeo2MzI_dkZYb1KMTUivuGQh5Q
+
+    integrations:
+      github:
+        - host: github.com
+          token: "fake_token_for_testing"
+
+    auth:
+      environment: production
+      providers:
+        guest: {}
+
+    catalog:
+      import:
+        entityFilename: catalog-info.yaml
+        pullRequestBranchName: backstage-integration
+      rules:
+        - allow: [Component, System, API, Resource, Location]
+
+    techdocs:
+      builder: 'local'
+      generator:
+        runIn: 'local'
+      publisher:
+        type: 'local'
+
+    scaffolder:
+      defaultAuthor:
+        name: Fenwave
+        email: admin@fenwave.com
+      defaultCommitMessage: 'Initial commit'
+
+    # Additional configurations for custom plugins
+    github:
+      token: "fake_token_for_testing"
+
+    monitoring:
+      baseUrl: "https://monitoring.fake-domain.com"
+      token: "fake_monitoring_token"
+
+    kubernetes:
+      serviceLocatorMethod:
+        type: 'multiTenant'
+      clusterLocatorMethods:
+        - type: 'config'
+          clusters:
+            - url: https://kubernetes.default.svc
+              name: local-cluster
+              authProvider: 'serviceAccount'
