@@ -1,11 +1,46 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1apiVersion: kustomize.config.k8s.io/v1beta1
 
+kind: Kustomizationkind: Kustomization
+
+
+
+# Utilisation du Helm Chart depuis Fenwave-backstageresources:
+
+helmCharts:  - deployment.yaml
+
+  - name: fenwave-idp  - postgres.yaml
+
+    repo: https://github.com/Fenleap/Fenwave-backstage.git
+
+    version: 1.0.0images:
+
+    releaseName: fenwave-backstage- name: 954976325487.dkr.ecr.eu-west-1.amazonaws.com/eks-infrastructure/idp
+
+    namespace: fenwave  newTag: v8
+
+    valuesInline:
+
+      backstage:
+        image:
+          repository: 954976325487.dkr.ecr.eu-west-1.amazonaws.com/eks-infrastructure/idp
+          tag: latest
+          pullPolicy: Always
+        replicaCount: 1
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 2Gi
+          requests:
+            cpu: 1000m
+            memory: 1Gi
+      postgresql:
+        enabled: true
+        auth:
+          postgresPassword: "backstage_password"
+          username: "backstage_user"
+          password: "backstage_password"
+          database: "backstage_db"
+
+# Namespace
 resources:
-  - deployment.yaml
-  - postgres.yaml
-
-images:
-- name: 954976325487.dkr.ecr.eu-west-1.amazonaws.com/eks-infrastructure/idp
-  newTag: v8
-
+  - namespace.yaml

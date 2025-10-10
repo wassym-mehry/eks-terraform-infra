@@ -1,6 +1,12 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: fenwave
-  labels:
-    name: fenwave
+apiVersion: v1apiVersion: v1
+
+kind: Namespacekind: Namespace
+
+metadata:metadata:
+
+  name: fenwave  name: fenwave
+
+  labels:  labels:
+
+    name: fenwave    name: fenwave
+    app: fenwave-backstage

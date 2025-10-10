@@ -9,12 +9,18 @@ metadata:
     argocd.argoproj.io/sync-wave: "1"
 spec:
   project: default
-  
-  # Source du code
+  .
+  # Source du code - Helm Chart
   source:
-    repoURL: https://github.com/wassym-mehry/eks-terraform-infra.git
-    targetRevision: feature/setup-infrastructure
-    path: gitops/applications/fenwave-idp/base
+    repoURL: https://github.com/Fenleap/Fenwave-backstage.git
+    targetRevision: release/v1.3.0
+    path: helm-chart
+    helm:
+      valueFiles:
+        - values-production.yaml
+      parameters:
+        - name: backstage.image.tag
+          value: latest
   
   # Destination dans le cluster
   destination:
