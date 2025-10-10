@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: fenwave-dev
+  namespace: argocd
+  labels:
+    app: fenwave-dev
+    environment: dev
+spec:
+  project: default
+  
+  # Source - Helm Chart pour DEV
+  source:
+    repoURL: https://github.com/Fenleap/Fenwave-backstage.git
+    targetRevision: release/v1.3.0
+    path: helm-chart
+    helm:
+      valueFiles:
+        - values-dev.yaml
+  
+  # Destination - namespace dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: fenwave-dev
+  
+  # Synchronisation automatique
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
