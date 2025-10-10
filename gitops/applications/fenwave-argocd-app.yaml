@@ -1,15 +1,16 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: fenwave-idp
+  name: fenwave-idp-prod
   namespace: argocd
   labels:
-    app: fenwave-idp
+    app: fenwave-idp-prod
+    environment: prod
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
   project: default
-  .
+  
   # Source du code - Helm Chart
   source:
     repoURL: https://github.com/Fenleap/Fenwave-backstage.git
@@ -25,7 +26,7 @@ spec:
   # Destination dans le cluster
   destination:
     server: https://kubernetes.default.svc
-    namespace: fenwave
+    namespace: fenwave-prod
   
   # Synchronisation automatique
   syncPolicy:
