@@ -20,7 +20,7 @@ spec:
         - values-dev.yaml
       parameters:
         - name: backstage.image.tag
-          value: "release-v1.3.0-1bc68e9d"
+          value: "release-v1.3.0-991c5c6b"
         - name: backstage.resources.requests.cpu
           value: "100m"
         - name: backstage.resources.requests.memory
