@@ -1,0 +1,75 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: fenwave-idp-dev
+  namespace: argocd
+  labels:
+    app: fenwave-idp-dev
+    environment: dev
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  # Source du code - Helm Chart pour Dev
+  source:
+    repoURL: https://github.com/Fenleap/Fenwave-backstage.git
+    targetRevision: release/v1.3.0
+    path: helm-chart
+    helm:
+      valueFiles:
+        - values-dev.yaml
+      parameters:
+        - name: backstage.image.tag
+          value: "release-v1.3.0"
+        - name: backstage.resources.requests.cpu
+          value: "100m"
+        - name: backstage.resources.requests.memory
+          value: "256Mi"
+        - name: backstage.resources.limits.cpu
+          value: "200m"
+        - name: backstage.resources.limits.memory
+          value: "512Mi"
+        - name: postgresql.primary.resources.requests.cpu
+          value: "100m"
+        - name: postgresql.primary.resources.requests.memory
+          value: "128Mi"
+        - name: postgresql.primary.resources.limits.cpu
+          value: "200m"
+        - name: postgresql.primary.resources.limits.memory
+          value: "256Mi"
+        - name: secretValues.AUTH_GITHUB_CLIENT_ID
+          value: "dummy"
+        - name: secretValues.AUTH_GITHUB_CLIENT_SECRET
+          value: "dummy"
+        - name: secretValues.AUTH_BITBUCKET_CLIENT_ID
+          value: "dummy"
+        - name: secretValues.AUTH_BITBUCKET_CLIENT_SECRET
+          value: "dummy"
+  # Destination dans le cluster (namespace dev)
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: fenwave-dev
+  # Synchronisation automatique
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  # Options de révision
+  revisionHistoryLimit: 10
+  # Health checks
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas

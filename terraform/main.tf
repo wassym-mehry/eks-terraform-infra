@@ -58,6 +58,9 @@ module "iam" {
   enable_ebs_csi_driver              = var.enable_ebs_csi_driver
   enable_aws_load_balancer_controller = var.enable_aws_load_balancer_controller
   enable_cluster_autoscaler          = var.enable_cluster_autoscaler
+  github_org                         = var.github_org
+  github_repo                        = var.github_repo
+  ecr_repository_arn                 = module.ecr.repository_arn
   common_tags                        = local.common_tags
 }
 
@@ -197,5 +200,42 @@ resource "helm_release" "cluster_autoscaler" {
   depends_on = [
     module.eks,
     module.iam
+  ]
+}
+
+# ECR Module
+module "ecr" {
+  source = "./modules/ecr"
+
+  project_name              = var.project_name
+  environment               = var.environment
+  github_actions_role_arn   = module.iam.github_actions_role_arn
+  eks_node_group_role_arn   = module.iam.node_group_role_arn
+  common_tags               = local.common_tags
+}
+
+# ArgoCD Module
+module "argocd" {
+  count = var.enable_argocd ? 1 : 0
+  source = "./modules/argocd"
+
+  cluster_name                  = local.cluster_name
+  environment                   = var.environment
+  github_org                    = var.github_org
+  github_repo                   = var.github_repo
+  ecr_repository_url            = module.ecr.repository_url
+  argocd_admin_password         = var.argocd_admin_password
+  argocd_ecr_role_arn           = module.iam.argocd_ecr_role_arn
+  enable_load_balancer          = var.argocd_enable_load_balancer
+  enable_ingress                = var.argocd_enable_ingress
+  argocd_domain                 = var.argocd_domain
+  certificate_arn               = var.argocd_certificate_arn
+  create_fenwave_application    = var.create_fenwave_application
+  fenwave_namespace             = var.fenwave_namespace
+
+  depends_on = [
+    module.eks,
+    module.iam,
+    module.ecr
   ]
 }

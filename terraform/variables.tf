@@ -176,3 +176,66 @@ variable "additional_tags" {
   type        = map(string)
   default     = {}
 }
+
+# GitHub Configuration
+variable "github_org" {
+  description = "GitHub organization name"
+  type        = string
+  default     = "wassym-mehry"
+}
+
+variable "github_repo" {
+  description = "GitHub repository name for GitOps"
+  type        = string
+  default     = "eks-terraform-infra"
+}
+
+# ArgoCD Configuration
+variable "enable_argocd" {
+  description = "Enable ArgoCD installation"
+  type        = bool
+  default     = true
+}
+
+variable "argocd_admin_password" {
+  description = "Admin password for ArgoCD"
+  type        = string
+  default     = "admin123"
+  sensitive   = true
+}
+
+variable "argocd_enable_load_balancer" {
+  description = "Enable load balancer for ArgoCD"
+  type        = bool
+  default     = false
+}
+
+variable "argocd_enable_ingress" {
+  description = "Enable ingress for ArgoCD"
+  type        = bool
+  default     = false
+}
+
+variable "argocd_domain" {
+  description = "Domain name for ArgoCD"
+  type        = string
+  default     = ""
+}
+
+variable "argocd_certificate_arn" {
+  description = "ARN of SSL certificate for ArgoCD ingress"
+  type        = string
+  default     = ""
+}
+
+variable "create_fenwave_application" {
+  description = "Create ArgoCD application for Fenwave"
+  type        = bool
+  default     = true
+}
+
+variable "fenwave_namespace" {
+  description = "Namespace for Fenwave application"
+  type        = string
+  default     = "fenwave"
+}

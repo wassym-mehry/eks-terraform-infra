@@ -99,3 +99,31 @@ output "configure_kubectl" {
   description = "Command to configure kubectl"
   value       = "aws eks update-kubeconfig --region ${var.aws_region} --name ${module.eks.cluster_name}"
 }
+
+# ECR Outputs
+output "ecr_repository_url" {
+  description = "URL of the ECR repository"
+  value       = module.ecr.repository_url
+}
+
+output "ecr_repository_arn" {
+  description = "ARN of the ECR repository"
+  value       = module.ecr.repository_arn
+}
+
+# GitHub Actions Role Output
+output "github_actions_role_arn" {
+  description = "ARN of the GitHub Actions IAM role"
+  value       = module.iam.github_actions_role_arn
+}
+
+# ArgoCD Outputs
+output "argocd_namespace" {
+  description = "Namespace where ArgoCD is installed"
+  value       = var.enable_argocd ? module.argocd[0].argocd_namespace : null
+}
+
+output "argocd_server_service" {
+  description = "ArgoCD server service name"
+  value       = var.enable_argocd ? module.argocd[0].argocd_server_service : null
+}
