@@ -4,6 +4,10 @@ metadata:
   name: fenwave
   labels:
     name: fenwave
+spec:
+  source:
+    helm:
+      parameters: []
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -25,50 +29,53 @@ spec:
     spec:
       serviceAccountName: fenwave-idp
       containers:
-      - name: fenwave-idp
-        image: 954976325487.dkr.ecr.eu-west-1.amazonaws.com/eks-infrastructure/idp:release-v1.3.0-16990926-20251007164542
-        ports:
-        - containerPort: 7007
-          name: http
-        env:
-        - name: NODE_ENV
-          value: "production"
-        - name: APP_CONFIG_app_baseUrl
-          value: "https://fenwave.your-domain.com"
-        - name: APP_CONFIG_backend_baseUrl
-          value: "https://fenwave.your-domain.com"
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "250m"
-          limits:
-            memory: "1Gi"
-            cpu: "500m"
-        livenessProbe:
-          httpGet:
-            path: /
-            port: http
-          initialDelaySeconds: 120
-          periodSeconds: 30
-          timeoutSeconds: 5
-          failureThreshold: 5
-        readinessProbe:
-          httpGet:
-            path: /
-            port: http
-          initialDelaySeconds: 90
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 10
-        volumeMounts:
-        - name: app-config
-          mountPath: /app/app-config.production.yaml
-          subPath: app-config.production.yaml
-          readOnly: true
+        - name: fenwave-idp
+          image: 954976325487.dkr.ecr.eu-west-1.amazonaws.com/eks-infrastructure/idp:release-v1.3.0-16990926-20251007164542
+          ports:
+            - containerPort: 7007
+              name: http
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: APP_CONFIG_app_baseUrl
+              value: "https://fenwave.your-domain.com"
+            - name: APP_CONFIG_backend_baseUrl
+              value: "https://fenwave.your-domain.com"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 10
+          volumeMounts:
+            - name: app-config
+              mountPath: /app/app-config.production.yaml
+              subPath: app-config.production.yaml
+              readOnly: true
       volumes:
-      - name: app-config
-        configMap:
-          name: fenwave-config-argocd
+        - name: app-config
+          configMap:
+            name: fenwave-config-argocd
+  source:
+    helm:
+      parameters: []
 ---
 apiVersion: v1
 kind: Service
@@ -81,11 +88,14 @@ spec:
   selector:
     app: fenwave-idp
   ports:
-  - name: http
-    port: 80
-    targetPort: 7007
-    protocol: TCP
+    - name: http
+      port: 80
+      targetPort: 7007
+      protocol: TCP
   type: ClusterIP
+  source:
+    helm:
+      parameters: []
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -94,6 +104,10 @@ metadata:
   namespace: fenwave
   labels:
     app: fenwave-idp
+spec:
+  source:
+    helm:
+      parameters: []
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -101,7 +115,7 @@ metadata:
   name: fenwave-config
   namespace: fenwave
 data:
-  app-config.production.yaml: |
+  app-config.production.yaml: |-
     app:
       title: Fenwave IDP
       baseUrl: https://fenwave.your-domain.com
@@ -150,3 +164,7 @@ data:
         name: Fenwave
         email: admin@fenwave.com
       defaultCommitMessage: 'Initial commit'
+spec:
+  source:
+    helm:
+      parameters: []
