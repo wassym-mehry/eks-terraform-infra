@@ -10,7 +10,6 @@ metadata:
     argocd.argoproj.io/sync-wave: "1"
 spec:
   project: default
-  
   # Source du code - Helm Chart pour Dev
   source:
     repoURL: https://github.com/Fenleap/Fenwave-backstage.git
@@ -21,7 +20,7 @@ spec:
         - values-dev.yaml
       parameters:
         - name: backstage.image.tag
-          value: "v1.3.0-alpha.3"
+          value: "release-v1.3.0-63490ee9"
         - name: backstage.resources.requests.cpu
           value: "100m"
         - name: backstage.resources.requests.memory
@@ -46,12 +45,10 @@ spec:
           value: "dummy"
         - name: secretValues.AUTH_BITBUCKET_CLIENT_SECRET
           value: "dummy"
-  
   # Destination dans le cluster (namespace dev)
   destination:
     server: https://kubernetes.default.svc
     namespace: fenwave-dev
-  
   # Synchronisation automatique
   syncPolicy:
     automated:
@@ -68,10 +65,8 @@ spec:
         duration: 5s
         factor: 2
         maxDuration: 3m
-  
   # Options de révision
   revisionHistoryLimit: 10
-  
   # Health checks
   ignoreDifferences:
     - group: apps
