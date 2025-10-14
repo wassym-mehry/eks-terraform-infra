@@ -21,7 +21,31 @@ spec:
         - values-dev.yaml
       parameters:
         - name: backstage.image.tag
-          value: latest
+          value: "v1.3.0-alpha.3"
+        - name: backstage.resources.requests.cpu
+          value: "100m"
+        - name: backstage.resources.requests.memory
+          value: "256Mi"
+        - name: backstage.resources.limits.cpu
+          value: "200m"
+        - name: backstage.resources.limits.memory
+          value: "512Mi"
+        - name: postgresql.primary.resources.requests.cpu
+          value: "100m"
+        - name: postgresql.primary.resources.requests.memory
+          value: "128Mi"
+        - name: postgresql.primary.resources.limits.cpu
+          value: "200m"
+        - name: postgresql.primary.resources.limits.memory
+          value: "256Mi"
+        - name: secretValues.AUTH_GITHUB_CLIENT_ID
+          value: "dummy"
+        - name: secretValues.AUTH_GITHUB_CLIENT_SECRET
+          value: "dummy"
+        - name: secretValues.AUTH_BITBUCKET_CLIENT_ID
+          value: "dummy"
+        - name: secretValues.AUTH_BITBUCKET_CLIENT_SECRET
+          value: "dummy"
   
   # Destination dans le cluster (namespace dev)
   destination:
